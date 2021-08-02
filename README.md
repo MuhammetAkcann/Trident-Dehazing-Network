@@ -1,3 +1,11 @@
+-The main fork did not have the train code. I have added training file. Used loss is MSE different than the main fork. 
+
+-The main fork did not have the pathing the input images I have added a patch.py to patch input images for training procces 
+
+-The main for has not visualized intermediate layers. I have visualized them and saved them in u1, d64u1, d4u1 files. If you want to visualize your input data you can uncooment line 276 in test file.
+
+-The main fork was using old environment setup, I have integrated the codes so that you can use them with latedt cuda, python and ubuntu versions.
+
 # Trident Dehazing Network
 NTIRE 2020 NonHomogeneous Dehazing Challenge (CVPR Workshop 2020)  **1st** Solution.
 
@@ -6,15 +14,15 @@ NTIRE 2020 NonHomogeneous Dehazing Challenge (CVPR Workshop 2020)  **1st** Solut
 
 ### Environment:
 
-- Ubuntu16.04
-- Python3.6
-- NVIDIA GPU+CUDA8
+- Ubuntu 20.04
+- Python3.8.10
+- NVIDIA GPU+CUDA10.1
 
 ### Dependencies:
 
 - pretrainedmodels==0.7.4
-- torchvision==0.2.1
-- torch==0.4.1
+- torchvision==0.9.1
+- torch==1.8.1
 - tqdm
 
 ### Test
