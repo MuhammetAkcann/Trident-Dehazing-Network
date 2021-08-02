@@ -32,7 +32,13 @@ Compile the DCN module fisrt. If your environment is the same as ours, compile w
 Check the hazy images path (test.py line 14), the model path (test.py line 13) and the output path (test.py line 15)
 
 ```
-python test.py
+python test.py --inp <hazyImageFolder>
+```
+
+### Train
+dont forget to check the input file
+```
+python train.py
 ```
 
 ### Pretrained model
