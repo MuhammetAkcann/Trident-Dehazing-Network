@@ -41,6 +41,4 @@ https://pan.baidu.com/s/1l0-hOnIAAbFzmauUmFaRjw  password: 22so
 
 https://drive.google.com/file/d/1LcSsCWGLkjmq5o08yhMbSU6DjCGugmRw
 
-### Another solution (**2nd** Solution, Knowledge Transfer Dehazing Network) of our team: 
 
-https://github.com/GlassyWu/KTDN
