@@ -1,9 +1,11 @@
 import torch
+torch.cuda.empty_cache()
 import torch.nn as nn
 import torch.nn.functional as F
 import pretrainedmodels
 import torch.nn.init as init
 from torch.nn import Parameter
+from torchvision.transforms import ToTensor, ToPILImage
 try:
     import sys
     sys.path.append("DCNv2")
@@ -175,7 +177,7 @@ class DUB(nn.Module):
     def forward(self, x):
         y=self.conv3(x)
         x=self.conv1(torch.cat([x,y],1))
-        return F.upsample_nearest(x, scale_factor=2)
+        return F.interpolate(x, scale_factor=2)#upsample_nearest
 
 def make_model(pretrained):
     model=Net(pretrained)
@@ -230,7 +232,7 @@ class Net(nn.Module):
             DCN(32, 3, 3, 1, 1)
         )
 
-    def forward(self,x):
+    def forward(self,x):#,filename
         b,c,h,w=x.shape
         mod1=h%64
         mod2=w%64
@@ -257,7 +259,35 @@ class Net(nn.Module):
 
         d64u1=self.d64u1(x)
         d4u1=self.d4u1(x)
+
         x=torch.cat([u1,d64u1,d4u1],1)
+
+
+
+
+        ###################  uncomment to get the visualiziation of mid layers
+        """u1 = torch.sum(u1, 1)
+                                u1 = u1.clamp(0,1)
+                                print("u1.shape:",u1.shape)
+                                u1 = u1.cpu().data
+                                u1 = ToPILImage()(u1)
+                                u1.save("./u1/"+filename)
+                        
+                                d4u1 = torch.sum(d4u1, 1)
+                                d4u1 = d4u1.clamp(0,1)
+                                print("d4u1.shape:",d4u1.shape)
+                                d4u1 = d4u1.cpu().data
+                                d4u1 = ToPILImage()(d4u1)
+                                d4u1.save("./d4u1/"+filename)
+                        
+                                d64u1 = d64u1.squeeze(0)
+                                d64u1 = d64u1.clamp(0,1)
+                                d64u1 = d64u1.cpu().data
+                                d64u1 = ToPILImage()(d64u1)
+                                d64u1.save("./d64u1/"+filename)"""
+
+
+
         x = self.tail(x)
 
         if(mod1):x=x[:,:,:-down1,:]

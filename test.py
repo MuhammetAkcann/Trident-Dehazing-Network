@@ -1,5 +1,6 @@
 import argparse
 import torch
+torch.cuda.empty_cache()
 import time,os
 import numpy as np
 from PIL import Image
@@ -9,21 +10,25 @@ from torch.autograd import Variable
 from torchvision.transforms import ToTensor, ToPILImage
 from TDN import Net
 
+cuda0 = torch.cuda.set_device(1)
+
+print("torch.cuda.current_device():",torch.cuda.current_device())
 parser = argparse.ArgumentParser(description="PyTorch DeepDehazing")
 parser.add_argument("--checkpoint", default="TDN_NTIRE2020_Dehazing.pt", type=str, help="model path")
 parser.add_argument("--inp", default="input",type=str, help="test images path")
 parser.add_argument("--opt", default="output",type=str, help="output images path")
 
-os.environ["CUDA_VISIBLE_DEVICES"]='1'
+os.environ["CUDA_VISIBLE_DEVICES"]='4'
 
 opt = parser.parse_args()
 print(opt)
 
 net = Net(pretrained=False)
-checkpoint=torch.load(opt.checkpoint)
+checkpoint = torch.load(opt.checkpoint)
+
 net.load_state_dict(checkpoint)
 net.eval()
-net = nn.DataParallel(net, device_ids=[0]).cuda()
+net = nn.DataParallel(net, device_ids=[1]).cuda()
 
 def is_image_file(filename):
   filename_lower = filename.lower()
@@ -32,7 +37,7 @@ def is_image_file(filename):
 images = [os.path.join(opt.inp, x) for x in os.listdir(opt.inp) if is_image_file(x)]
 total_t=0
 
-def forward_chop(*args, forward_function=None,shave=12, min_size=16000000):#160000
+def forward_chop(*args, forward_function=None,shave=12, min_size=160000000):#160000
     # These codes are from https://github.com/thstkdgus35/EDSR-PyTorch
     # if self.input_large:
     #     scale = 1
@@ -55,13 +60,16 @@ def forward_chop(*args, forward_function=None,shave=12, min_size=16000000):#1600
     if w_size * h_size < min_size:
         for i in range(0, 4, n_GPUs):
             x = [torch.cat(_x[i:(i + n_GPUs)], dim=0) for _x in list_x]
+            #print("x[0].size:",x[0].size())
             y = forward_function(*x)
+            #print("type(y):",y.size())
             if not isinstance(y, list): y = [y]
             if not list_y:
                 list_y = [[c for c in _y.chunk(n_GPUs, dim=0)] for _y in y]
             else:
                 for _list_y, _y in zip(list_y, y):
                     _list_y.extend(_y.chunk(n_GPUs, dim=0))
+            #print("len(list_y):",(list_y[0][0].size()))
     else:
         for p in zip(*list_x):
             y = forward_chop(*p, forward_function=forward_function,shave=shave, min_size=min_size)
@@ -103,13 +111,15 @@ def forward_x8(*args, forward_function=None):
         elif op == 't':
             tfnp = v2np.transpose((0, 1, 3, 2)).copy()
 
-        ret = torch.Tensor(tfnp).cuda()
+        ret = torch.Tensor(tfnp).cuda(1)
         return ret
 
     list_x = []
     for a in args:
         x = [a]
-        for tf in 'v', 'h', 't': x.extend([_transform(_x, tf) for _x in x])
+        for tf in 'v', 'h', 't':
+            for _x in x:
+                x.extend([_transform(_x, tf)])
 
         list_x.append(x)
 
@@ -139,13 +149,27 @@ def forward_x8(*args, forward_function=None):
 for im_path in tqdm(images):
     filename = im_path.split('/')[-1]
     im = Image.open(im_path)
+    #print(im.size)
+    print("image.type 1:",type(im))
+    #print("image.shape 1:",im.shape)
     im1 = ToTensor()(im)
+    print("image.type 2:",type(im1))
+    print("image.shape 2:",im1.shape)
     im1 = Variable(im1).cuda().unsqueeze(0)
+    print("image.type 3:",type(im1))
+    print("image.shape 3:",im1.shape)
     t0=time.time()
     with torch.no_grad():
-        im=forward_x8(im1,forward_function=net.forward)# self ensemble
-        # im = net(im1).squeeze(0)# no self ensemble
-        # im = forward_chop(im1, forward_function=net.forward).squeeze(0)# use it when graphics memory is not enough
+        #im=forward_x8(im1,forward_function=net.forward)# self ensemble
+        print("1")
+        print("im.shape:",im1.shape)
+        print("im.type:",im1.type)
+        print(im1)
+        print(type(im1))
+        im = net(im1)# no self ensemble
+        print("10")
+        im = im.squeeze(0)
+        #im = forward_chop(im1, forward_function=net.forward).squeeze(0)# use it when graphics memory is not enough
     total_t=total_t+time.time()-t0
     im = im.cpu().data
     im = ToPILImage()(im)
