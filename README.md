@@ -4,7 +4,7 @@
 
 -The main for has not visualized intermediate layers. I have visualized them and saved them in u1, d64u1, d4u1 files. If you want to visualize your input data you can uncooment line 276 in test file.
 
--The main fork was using old environment setup, I have integrated the codes so that you can use them with latedt cuda, python and ubuntu versions.
+-The main fork was using old environment setup, I have integrated the codes so that you can use them with latest cuda, python and ubuntu versions.
 
 # Trident Dehazing Network
 NTIRE 2020 NonHomogeneous Dehazing Challenge (CVPR Workshop 2020)  **1st** Solution.
