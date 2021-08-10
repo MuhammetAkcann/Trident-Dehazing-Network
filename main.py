@@ -50,11 +50,8 @@ class dehaze(object):
 
     def preprocess(self, input_image, args=None):
         input_image = cv2.imread(input_image)
-        print("after imread:",input_image.shape)
         input_image = self.ensure_color(input_image)
-        print("input_image 2:",input_image.shape)
         input_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
-        print("after COLOR_BGR2RGB 2:",input_image.shape)
         #input_image = cv2.resize(input_image,
         #                         (self.INPUT_SHAPE[1],
         #                          self.INPUT_SHAPE[2]))
@@ -67,20 +64,16 @@ class dehaze(object):
         with torch.no_grad():
             for inp in input_list:
                 image = self.preprocess(inp)
-                print("after preprocess:",image.shape)
                 image = ToTensor()(image)
-                print("after converting ToTensor:",image.shape)
                 image = Variable(image).cuda().unsqueeze(0)
-                print("after Variable:",image.shape)
                 im = self.ENGINE(image)
-                print("type:",type(im))
                 im = im.squeeze(0)
                 im = im.T
 
-                print("im.shape:",im.shape)
 
                 im = im.cpu().numpy()
                 im = cv2.rotate(im, cv2.ROTATE_90_CLOCKWISE)
+                im = cv2.flip(im, 1)
                 im = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
                 im_list.append(im*255)
         return im_list
