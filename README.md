@@ -1,3 +1,5 @@
+-If you are going to use torch 1.5+ compile DCNv2's latest version via "https://github.com/jinfagang/DCNv2_latest"
+
 -The main fork did not have the train code. I have added training file. Used loss is MSE different than the main fork. 
 
 -The main fork did not have the patching the input images I have added a patch.py to patch input images for training procces 
